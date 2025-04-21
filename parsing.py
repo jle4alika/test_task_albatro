@@ -175,7 +175,6 @@ class Parsing:
                         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,
                                                                    "div.product-card-description__main > div.product-card-description-text")))
 
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-characteristics__footer")))
                         time.sleep(1)
 
                     #  Перезагружаем и снова ждём если не прогрузило страницу
@@ -192,13 +191,6 @@ class Parsing:
                         #  Возвращаемся вверх, чтобы догрузить оставшееся
                         self.driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.HOME)
 
-                        #  Устанавливаем таймер на загрузку страницы на нужные там текста
-                        wait.until(EC.presence_of_element_located(
-                            (By.CSS_SELECTOR,
-                             "div.product-card-description__main > div.product-card-description-text > div > button")))
-
-                        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-characteristics__footer")))
-
                     #  Нажимаем кнопку "Развернуть" в описании товара
                     try:
                         button = self.driver.find_element(By.CSS_SELECTOR,
@@ -210,13 +202,16 @@ class Parsing:
                     except NoSuchElementException:
                         pass
 
-                    #  Нажимаем кнопку "Развернуть" для характеристик товара
-                    button = self.driver.find_element(By.CLASS_NAME, 'product-characteristics__footer').find_element(By.CSS_SELECTOR,
-                                                                                                       'div.product-characteristics__footer > button')
-                    time.sleep(3)
+                    try:
+                        #  Нажимаем кнопку "Развернуть" для характеристик товара
+                        button = self.driver.find_element(By.CLASS_NAME, 'product-characteristics__footer').find_element(By.CSS_SELECTOR,
+                                                                                                           'div.product-characteristics__footer > button')
+                        time.sleep(3)
 
-                    button.click()
+                        button.click()
 
+                    except NoSuchElementException:
+                        pass
 
                     time.sleep(1)
                     #  Получаем html данные со страницы
@@ -251,10 +246,11 @@ class Parsing:
                     price = soup.find('div', class_='product-buy__price').text.replace(' ', ' ').split('₽')[0] + '₽'
 
                     #  Получаем описание товара
-                    about = soup.find('div', class_='product-card-description-text').text.replace('\nСвернуть',
-                                                                                                  '').replace("\t",
-                                                                                                              "").replace(
-                        '\n\n', '')
+                    about = soup.find('div', class_='product-card-description-text')
+                    if about:
+                        about = about.text.replace('\nСвернуть','').replace("\t","").replace('\n\n', '')
+                    else:
+                        about = ''
 
                     #  Получаем название товара
                     product_name = soup.find('div', class_='product-card-top__name').text.replace('\"', ' ')
